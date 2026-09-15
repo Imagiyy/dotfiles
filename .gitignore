@@ -1,0 +1,39 @@
+# Security & Secret Keys
+.ssh/
+.gnupg/
+.pki/
+.git-credentials
+*.pem
+*.key
+*.kdbx
+connections.db
+vaultmanager/
+
+# Browsers & Email
+google-chrome/
+mozilla/
+evolution/
+chromium/
+
+# Shell & Command Histories
+.zsh_history
+.bash_history
+.python_history
+.viminfo
+.lesshst
+
+# Noctalia History & Clipboard
+noctalia/clipboard/
+noctalia/notification_history*
+noctalia/screen_time.json
+noctalia/recently_used.json
+noctalia/usage_counts.json
+
+# Caches, Binaries & Temporary Files
+.cache/
+__pycache__/
+*.log
+matlab_crash_dump.*
+Trash/
+.DS_Store
+Thumbs.db

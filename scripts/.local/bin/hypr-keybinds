@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Hyprland Keybindings Helper Script
+# Displays a clean, searchable list of keybindings using wofi/rofi/zenity
+
+KEYBINDS=$(cat << 'EOF'
+SUPER + Return          󰅍  Launch Terminal (Kitty)
+SUPER + Q               󰅖  Close Active Window
+SUPER + D               󰍉  Application Launcher (Noctalia)
+SUPER + C               󰈹  Launch Google Chrome
+SUPER + B               󰈹  Launch Brave Browser
+SUPER + O               󱓧  Launch Obsidian
+SUPER + A               󰅴  Launch Antigravity IDE
+SUPER + M               󰗘  Launch MATLAB
+SUPER + E               󰉋  Launch File Manager (Dolphin)
+SUPER + V               󱂬  Toggle Floating Window State
+SUPER + P               󰹙  Toggle Pseudo Tiling Mode
+SUPER + J               󰤌  Toggle Layout Split (Dwindle)
+SUPER + L               󰍉  Maximize Window (Monocle Mode)
+Home                    󰊓  Toggle Fullscreen Mode
+SUPER + S               󰒓  Toggle Noctalia Settings Panel
+SUPER + Tab             󱂬  Window Switcher (All Workspaces)
+ALT + Tab               󱂬  Cycle Windows (Current Workspace)
+Print                   󰹑  Capture Region Screenshot to Clipboard & File
+SUPER + Shift + S       󰹑  Capture Fullscreen Screenshot to Clipboard & File
+SUPER + Print           󰈙  OCR Text Capture (Extract Text from Screen)
+SUPER + Arrow Keys      󰁍  Move Window Focus (Left / Right / Up / Down)
+SUPER + [1-9, 0]        󱂬  Switch to Workspace 1-10
+SUPER + Shift + [1-9,0] 󰈈  Move Window to Workspace 1-10
+SUPER + Mouse Wheel     󰍉  Scroll Through Active Workspaces
+SUPER + Left Drag       󰆾  Move Window
+SUPER + Right Drag      󰩨  Resize Window
+XF86 Media Keys         󰎆  Volume, Mic Mute, Brightness, Play/Pause, Qalculate
+SUPER + H                 View All Keybindings (This Cheat Sheet)
+EOF
+)
+
+if command -v wofi >/dev/null 2>&1; then
+    echo "$KEYBINDS" | wofi --dmenu --prompt "Hyprland Keybindings" --width 650 --height 500 --cache-file /dev/null
+elif command -v rofi >/dev/null 2>&1; then
+    echo "$KEYBINDS" | rofi -dmenu -p "Hyprland Keybindings" -i
+elif command -v zenity >/dev/null 2>&1; then
+    echo "$KEYBINDS" | zenity --text-info --title="Hyprland Keybindings" --width=650 --height=500
+else
+    kitty --title "Hyprland Keybindings" bash -c "echo '$KEYBINDS' | less"
+fi

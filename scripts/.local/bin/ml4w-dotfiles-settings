@@ -1,0 +1,388 @@
+#!/usr/bin/env bash
+
+# Paths and variables
+DEV_DIR="/ml4w-dotfiles-settings/bin"
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+if [[ "$SCRIPT_DIR" == *"$DEV_DIR"* ]]; then
+    LIB_DIR="$HOME/Projects/ml4w-dotfiles-settings/lib"
+    echo
+    echo ":: Running in dev environment"
+else
+    LIB_DIR="$HOME/.local/share/ml4w-dotfiles-settings"
+fi
+
+CONFIG_DIR="$HOME/.config/ml4w-dotfiles-settings"
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB_FILE="$LIB_DIR/utils.sh"
+DEMO_FILE="$APP_DIR/demo/settings.json"
+
+DRY_RUN=0
+PROFILE=""
+DIRECT_ID=""
+DIRECT_VALUE=""
+CREATE_PROFILE=""
+ACTION="menu" # default action
+
+# Source utils
+if [[ -f "$LIB_FILE" ]]; then
+    source "$LIB_FILE"
+else
+    echo "Error: Cannot find lib/utils.sh at $LIB_FILE"
+    exit 1
+fi
+
+# Parse Arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --help)
+            echo "Usage: ml4w-dotfiles-settings [OPTIONS] [PROFILE]"
+            echo "Options:"
+            echo "  --test <profile>                           Start script in test mode (no files modified)"
+            echo "  --create <profile>                         Create a profile with the demo setup"
+            echo "  --set --id <id> --value <value> [profile]  Set a value directly for an ID"
+            echo "  --get --id <id> [profile]                  Get the current value for an ID"
+            echo "  --help                                     Show this help message"
+            exit 0
+            ;;
+        --test)
+            DRY_RUN=1
+            shift
+            ;;
+        --create)
+            ACTION="create"
+            CREATE_PROFILE="$2"
+            shift 2
+            ;;
+        --set)
+            ACTION="set"
+            shift
+            ;;
+        --get)
+            ACTION="get"
+            shift
+            ;;
+        --id)
+            DIRECT_ID="$2"
+            shift 2
+            ;;
+        --value)
+            DIRECT_VALUE="$2"
+            shift 2
+            ;;
+        *)
+            if [[ -z "$PROFILE" ]]; then
+                PROFILE="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Check dependencies
+if ! command -v gum &> /dev/null || ! command -v jq &> /dev/null; then
+    echo "Error: 'gum' and 'jq' are required but not installed."
+    exit 1
+fi
+
+# Ensure base config folder exists
+mkdir -p "$CONFIG_DIR"
+
+# Handle --create
+if [[ "$ACTION" == "create" ]]; then
+    if [[ -z "$CREATE_PROFILE" ]]; then
+        echo "Error: Profile name required for --create."
+        exit 1
+    fi
+    mkdir -p "$CONFIG_DIR/$CREATE_PROFILE"
+    cp "$DEMO_FILE" "$CONFIG_DIR/$CREATE_PROFILE/settings.json"
+    echo "Profile '$CREATE_PROFILE' successfully created."
+    exit 0
+fi
+
+# Validate Profile for Menu, Set, and Get actions
+if [[ -z "$PROFILE" ]]; then
+    echo "Error: Profile not specified. Use --help for usage."
+    exit 1
+fi
+
+PROFILE_DIR="$CONFIG_DIR/$PROFILE"
+SETTINGS_FILE="$PROFILE_DIR/settings.json"
+
+if [[ ! -d "$PROFILE_DIR" || ! -f "$SETTINGS_FILE" ]]; then
+    echo "Error: Profile not found or settings.json missing at $PROFILE_DIR"
+    exit 1
+fi
+
+# Handle Direct CLI Actions (--set and --get)
+if [[ "$ACTION" == "set" || "$ACTION" == "get" ]]; then
+    if [[ -z "$DIRECT_ID" ]]; then
+        echo "Error: --id is required for --set and --get."
+        exit 1
+    fi
+
+    item_json=$(jq -r --arg id "$DIRECT_ID" 'map(.settings) | flatten | .[] | select(.id == $id)' "$SETTINGS_FILE")
+    
+    if [[ -z "$item_json" ]]; then
+        echo "Error: ID '$DIRECT_ID' not found in settings.json"
+        exit 1
+    fi
+    
+    type=$(echo "$item_json" | jq -r '.type // ""')
+    file=$(echo "$item_json" | jq -r '.file')
+    mode=$(echo "$item_json" | jq -r '.mode')
+    match=$(echo "$item_json" | jq -r '.match // ""')
+    checkpoint=$(echo "$item_json" | jq -r '.checkpoint // ""')
+    default=$(echo "$item_json" | jq -r '.default // ""')
+    post_command=$(echo "$item_json" | jq -r '.post_command // ""')
+    true_value=$(echo "$item_json" | jq -r 'if has("true_value") then .true_value else "true" end')
+    false_value=$(echo "$item_json" | jq -r 'if has("false_value") then .false_value else "false" end')
+    
+    # Standardize checkpoint mode for direct operations
+    if [[ -n "$checkpoint" && "$mode" == "replace" ]]; then
+        mode="replace with checkpoint"
+    fi
+
+    expanded_file=$(expand_path "$file")
+
+    if [[ "$ACTION" == "set" ]]; then
+        if [[ -z "$DIRECT_VALUE" ]]; then
+            echo "Error: --value is required for --set."
+            exit 1
+        fi
+
+        if [[ ! -f "$expanded_file" ]]; then
+            echo "Error: Target file $file does not exist. Cannot apply setting."
+            exit 1
+        fi
+
+        # Map standard true/false CLI inputs to custom toggle values if defined
+        if [[ "$type" == "toggle" ]]; then
+            if [[ "$DIRECT_VALUE" == "true" ]]; then
+                DIRECT_VALUE="$true_value"
+            elif [[ "$DIRECT_VALUE" == "false" ]]; then
+                DIRECT_VALUE="$false_value"
+            fi
+        fi
+
+        apply_setting "$file" "$mode" "$match" "$checkpoint" "$DIRECT_VALUE"
+        
+        # Execute post_command in the background if it exists
+        if [[ -n "$post_command" && $DRY_RUN -eq 0 ]]; then
+            # eval "$post_command &"
+            nohup bash -c "$post_command" > /dev/null 2>&1 &
+            disown
+        elif [[ -n "$post_command" && $DRY_RUN -eq 1 ]]; then
+            echo -e "\n[TEST MODE] Would execute post_command: $post_command\n"
+        fi
+        
+        echo "Successfully updated $DIRECT_ID."
+        exit 0
+    elif [[ "$ACTION" == "get" ]]; then
+        # Output raw value with absolutely no formatting
+        current_val=$(get_current_value "$file" "$mode" "$match" "$checkpoint" "$default")
+        
+        exact_val="$current_val"
+        if [[ "$match" == *".*"* ]]; then
+            export AWK_MATCH="$match"
+            matched_part=$(echo "$current_val" | awk 'match($0, ENVIRON["AWK_MATCH"]) { print substr($0, RSTART, RLENGTH); exit }')
+            if [[ -n "$matched_part" ]]; then
+                exact_val="$matched_part"
+            fi
+            prefix="${match%%\.\**}"
+            suffix="${match#*\.\*}"
+            exact_val="${exact_val#"$prefix"}"
+            exact_val="${exact_val%"$suffix"}"
+        fi
+        
+        echo -n "$exact_val"
+        exit 0
+    fi
+fi
+
+# Main Gum UI Loop (Groups)
+while true; do
+    clear
+    gum style --foreground 212 --border double --border-foreground 212 --padding "0 1" " ml4w Dotfiles Settings - Profile: $PROFILE "
+    
+    # Extract available groups
+    groups=$(jq -r '.[].group' "$SETTINGS_FILE")
+    
+    # Choose Group (with Exit option)
+    selected_group=$(echo -e "$groups\nExit" | gum choose --header "Select a configuration group:" --limit 1)
+
+    # Break outer loop if Exit is selected
+    if [[ "$selected_group" == "Exit" || -z "$selected_group" ]]; then
+        break
+    fi
+
+    # Sub-menu Loop (Settings within the selected group)
+    while true; do
+        clear
+        gum style --foreground 212 --border double --border-foreground 212 --padding "0 1" " Profile: $PROFILE > $selected_group "
+        
+        # Get settings names for the specific group
+        settings_names=$(jq -r --arg grp "$selected_group" '.[] | select(.group == $grp) | .settings[].name' "$SETTINGS_FILE")
+        
+        # Render Gum choose for settings (with Back option)
+        selected_name=$(echo -e "$settings_names\nBack" | gum choose --header "Select a setting to configure:" --limit 1)
+
+        # Break inner loop to go back to Group menu
+        if [[ "$selected_name" == "Back" || -z "$selected_name" ]]; then
+            break
+        fi
+
+        # Fetch JSON object for the selected setting
+        item_json=$(jq -r --arg grp "$selected_group" --arg name "$selected_name" '.[] | select(.group == $grp) | .settings[] | select(.name == $name)' "$SETTINGS_FILE")
+
+        name=$(echo "$item_json" | jq -r '.name')
+        instructions=$(echo "$item_json" | jq -r '.instructions')
+        type=$(echo "$item_json" | jq -r '.type')
+        mode=$(echo "$item_json" | jq -r '.mode')
+        file=$(echo "$item_json" | jq -r '.file')
+        match=$(echo "$item_json" | jq -r '.match // ""')
+        checkpoint=$(echo "$item_json" | jq -r '.checkpoint // ""')
+        default=$(echo "$item_json" | jq -r '.default // ""')
+        folder=$(echo "$item_json" | jq -r '.folder // ""')
+        post_command=$(echo "$item_json" | jq -r '.post_command // ""')
+        filetypes=$(echo "$item_json" | jq -r '.filetypes // ""')
+        
+        # Safely fetch true/false values, defaulting to "true" and "false"
+        true_value=$(echo "$item_json" | jq -r 'if has("true_value") then .true_value else "true" end')
+        false_value=$(echo "$item_json" | jq -r 'if has("false_value") then .false_value else "false" end')
+
+        # Standardize checkpoint mode
+        if [[ -n "$checkpoint" && "$mode" == "replace" ]]; then
+            mode="replace with checkpoint"
+        fi
+
+        current_val=$(get_current_value "$file" "$mode" "$match" "$checkpoint" "$default")
+        expanded_file=$(expand_path "$file")
+
+        # Dynamically extract exact value by stripping the literal match prefix and suffix
+        exact_val="$current_val"
+        if [[ "$match" == *".*"* ]]; then
+            export AWK_MATCH="$match"
+            matched_part=$(echo "$current_val" | awk 'match($0, ENVIRON["AWK_MATCH"]) { print substr($0, RSTART, RLENGTH); exit }')
+            if [[ -n "$matched_part" ]]; then
+                exact_val="$matched_part"
+            fi
+            prefix="${match%%\.\**}"
+            suffix="${match#*\.\*}"
+            exact_val="${exact_val#"$prefix"}"
+            exact_val="${exact_val%"$suffix"}"
+        fi
+
+        # Display Setting Info
+        echo ""
+        gum style --foreground 82 "▶ Setting: $name"
+        gum style --foreground 250 "$instructions"
+        gum style --foreground 240 "Mode: $mode | Type: $type"
+        gum style --foreground 240 "Target: $file"
+        
+        # Display warning if target file doesn't exist
+        if [[ ! -f "$expanded_file" ]]; then
+            gum style --foreground 196 "⚠ Target file does not exist!"
+        fi
+
+        gum style --foreground 39 "Current value in file:"
+        gum style --foreground 230 --padding "0 2" "$current_val"
+        echo ""
+
+        # Prompt user based on type
+        new_value=""
+        if [[ "$type" == "toggle" ]]; then
+            toggle_ans=$(gum choose "Yes" "No")
+            if [[ "$toggle_ans" == "Yes" ]]; then
+                new_value="$true_value"
+            elif [[ "$toggle_ans" == "No" ]]; then
+                new_value="$false_value"
+            fi
+        elif [[ "$type" == "textfield" ]]; then
+            # Pre-fill textfield with exact_val using the --value flag
+            new_value=$(gum input --placeholder "Default: $default" --value "$exact_val")
+        elif [[ "$type" == "choose" ]]; then
+            options=$(echo "$item_json" | jq -r '.options[]')
+            # If the exact value exists in options, bump it to the very top to pre-select it
+            if echo "$options" | grep -Fqx "$exact_val"; then
+                options=$(echo -e "$exact_val\n$(echo "$options" | grep -Fvx "$exact_val")")
+            fi
+            new_value=$(echo "$options" | gum choose)
+        elif [[ "$type" == "files" ]]; then
+            if [[ -n "$folder" ]]; then
+                expanded_folder=$(expand_path "$folder")
+                if [[ -d "$expanded_folder" ]]; then
+                    # List files, exclude directories
+                    items=$(ls -1p "$expanded_folder" | grep -v /)
+                    if [[ -n "$filetypes" ]]; then
+                        regex_pat=$(echo "$filetypes" | sed 's/\./\\./g' | sed 's/,/|/g')
+                        items=$(echo "$items" | grep -E "($regex_pat)$")
+                    fi
+                    if [[ -n "$items" ]]; then
+                        # Bump exact match to the top
+                        if echo "$items" | grep -Fqx "$exact_val"; then
+                            items=$(echo -e "$exact_val\n$(echo "$items" | grep -Fvx "$exact_val")")
+                        fi
+                        new_value=$(echo "$items" | gum choose)
+                    else
+                        gum style --foreground 196 "No files found in $expanded_folder"
+                        sleep 2
+                    fi
+                else
+                    gum style --foreground 196 "Directory not found: $expanded_folder"
+                    sleep 2
+                fi
+            else
+                gum style --foreground 196 "Error: 'folder' key missing in settings.json"
+                sleep 2
+            fi
+        elif [[ "$type" == "folders" ]]; then
+            if [[ -n "$folder" ]]; then
+                expanded_folder=$(expand_path "$folder")
+                if [[ -d "$expanded_folder" ]]; then
+                    # List directories, remove trailing slash
+                    items=$(ls -1p "$expanded_folder" | grep / | sed 's|/$||')
+                    if [[ -n "$items" ]]; then
+                        # Bump exact match to the top
+                        if echo "$items" | grep -Fqx "$exact_val"; then
+                            items=$(echo -e "$exact_val\n$(echo "$items" | grep -Fvx "$exact_val")")
+                        fi
+                        new_value=$(echo "$items" | gum choose)
+                    else
+                        gum style --foreground 196 "No folders found in $expanded_folder"
+                        sleep 2
+                    fi
+                else
+                    gum style --foreground 196 "Directory not found: $expanded_folder"
+                    sleep 2
+                fi
+            else
+                gum style --foreground 196 "Error: 'folder' key missing in settings.json"
+                sleep 2
+            fi
+        fi
+
+        # Apply changes if the user provided input
+        if [[ -n "$new_value" ]]; then
+            if [[ ! -f "$expanded_file" ]]; then
+                gum style --foreground 196 "✗ Cannot apply setting: File does not exist."
+                sleep 2
+            else
+                apply_setting "$file" "$mode" "$match" "$checkpoint" "$new_value"
+                
+                if [[ $DRY_RUN -eq 0 ]]; then
+                    gum style --foreground 82 "✓ Successfully set to: $new_value"
+                    
+                    # Execute post_command in the background if it exists
+                    if [[ -n "$post_command" ]]; then
+                        eval "$post_command &"
+                    fi
+                else
+                    if [[ -n "$post_command" ]]; then
+                        echo -e "\n[TEST MODE] Would execute post_command: $post_command\n"
+                    fi
+                fi
+                sleep 1.5
+            fi
+        fi
+    done
+done

@@ -1,0 +1,31 @@
+{
+  "displays": [
+    {
+      "name": "eDP-1",
+      "description": "Najing CEC Panda FPD Technology CO. ltd 0x005F",
+      "x": 0,
+      "y": 0,
+      "physical_width": 1920,
+      "physical_height": 1080,
+      "transform": "normal",
+      "scale": 0.9999999999999997,
+      "scale_filter": null,
+      "refresh": 120.03,
+      "dpms": true,
+      "adaptive_sync": false,
+      "custom_mode": false,
+      "mirror": "",
+      "ten_bit": false,
+      "active": true
+    }
+  ],
+  "config": {
+    "view-scale": 0.15,
+    "snap-threshold": 10,
+    "indicator-timeout": 500,
+    "custom-mode": [],
+    "use-desc": false,
+    "confirm-timeout": 10,
+    "profile-bound-wallpapers": true
+  }
+}
