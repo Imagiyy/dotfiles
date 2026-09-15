@@ -7,6 +7,7 @@
 [![Config - Lua](https://img.shields.io/badge/Config-Lua-000080?style=for-the-badge&logo=lua)](https://lua.org)
 [![Deployment - GNU Stow](https://img.shields.io/badge/Deployment-GNU%20Stow-informational?style=for-the-badge&logo=gnu)](https://www.gnu.org/software/stow/)
 [![Shell - Zsh](https://img.shields.io/badge/Shell-Zsh%20%2B%20Oh--My--Zsh-purple?style=for-the-badge&logo=zsh)](https://ohmyz.sh)
+[![License - MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 
 A complete, modern, and beautifully crafted Hyprland ecosystem configuration featuring Lua-based window management, dynamic theme generation, shell state persistence with **Noctalia**, wallpaper switching via **Waypaper**, and multiple tuned terminal environments.
 
@@ -206,7 +207,101 @@ Wallpapers are sourced from `~/Pictures/wallpapers`. Add your images to this dir
 
 ---
 
+## 🙏 Credits & Acknowledgments
+
+This dotfiles setup is built upon the incredible work of the open-source Linux community. Full credit and gratitude goes to every project and contributor listed below.
+
+### 🖥️ Window Manager & Desktop Environment
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [Hyprland](https://github.com/hyprwm/Hyprland) | [@vaxerski](https://github.com/vaxerski) | BSD-3-Clause | Dynamic tiling Wayland compositor |
+| [Hyprlock](https://github.com/hyprwm/hyprlock) | [@vaxerski](https://github.com/vaxerski) | BSD-3-Clause | GPU-accelerated screen locker for Hyprland |
+| [Hypridle](https://github.com/hyprwm/hypridle) | [@vaxerski](https://github.com/vaxerski) | BSD-3-Clause | Idle daemon for Hyprland |
+| [xdg-desktop-portal-hyprland](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | [@vaxerski](https://github.com/vaxerski) | BSD-3-Clause | XDG portal backend for Hyprland |
+
+### 🐚 Shell & Prompt
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [Oh-My-Zsh](https://github.com/ohmyzsh/ohmyzsh) | [@robbyrussell](https://github.com/robbyrussell) | MIT | Community-driven Zsh framework |
+| [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions) | [@zsh-users](https://github.com/zsh-users) | MIT | Fish-like autosuggestions for Zsh |
+| [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | [@zsh-users](https://github.com/zsh-users) | BSD-3-Clause | Syntax highlighting for Zsh |
+| [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) | [@JanDeDobbeleer](https://github.com/JanDeDobbeleer) | MIT | Cross-platform prompt theme engine |
+| [fzf](https://github.com/junegunn/fzf) | [@junegunn](https://github.com/junegunn) | MIT | Command-line fuzzy finder |
+
+### 💻 Terminal Emulators
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [Kitty](https://github.com/kovidgoyal/kitty) | [@kovidgoyal](https://github.com/kovidgoyal) | GPL-3.0 | GPU-accelerated terminal emulator |
+| [Ghostty](https://github.com/ghostty-org/ghostty) | [@mitchellh](https://github.com/mitchellh) | MIT | Fast, native terminal emulator |
+| [Wezterm](https://github.com/wez/wezterm) | [@wez](https://github.com/wez) | MIT | GPU-accelerated terminal with Lua config |
+
+### 🖼️ Wallpaper, Theming & Color Generation
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [Noctalia](https://github.com/niceBuddha/noctalia) | Noctalia Team | Proprietary | Shell & desktop customization framework |
+| [Waypaper](https://github.com/anufrievroman/waypaper) | [@anufrievroman](https://github.com/anufrievroman) | GPL-3.0 | GUI wallpaper manager for Wayland |
+| [Wallust](https://github.com/explosion-mental/wallust) | [@explosion-mental](https://github.com/explosion-mental) | MIT | Wallpaper-based color scheme generator |
+| [Catppuccin](https://github.com/catppuccin/catppuccin) | Catppuccin Org | MIT | Community-driven pastel color scheme |
+
+### 🎨 GTK/Qt Themes, Icons & Cursors
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [Flat Remix GTK](https://github.com/daniruiz/flat-remix-gtk) | [@daniruiz](https://github.com/daniruiz) | GPL-3.0 | Flat Remix GTK theme |
+| [Flat Remix Icons](https://github.com/daniruiz/flat-remix) | [@daniruiz](https://github.com/daniruiz) | GPL-3.0 | Flat Remix icon theme |
+| [Bibata Cursor](https://github.com/ful1e5/Bibata_Cursor) | [@ful1e5](https://github.com/ful1e5) | GPL-3.0 | Material-based cursor theme |
+| [Papirus Icons](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) | Papirus Dev Team | GPL-3.0 | Pixel-perfect icon theme for Linux |
+| [Kvantum](https://github.com/tsujan/Kvantum) | [@tsujan](https://github.com/tsujan) | GPL-3.0 | SVG-based Qt theme engine |
+
+### 🛠️ Utilities & Tools
+
+| Project | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [GNU Stow](https://www.gnu.org/software/stow/) | GNU Project | GPL-3.0 | Symlink farm manager for dotfiles |
+| [Fastfetch](https://github.com/fastfetch-cli/fastfetch) | fastfetch-cli | MIT | Fast system information tool |
+| [Btop](https://github.com/aristocratos/btop) | [@aristocratos](https://github.com/aristocratos) | Apache-2.0 | Resource monitor with TUI |
+| [grim](https://sr.ht/~emersion/grim/) | [@emersion](https://github.com/emersion) | MIT | Screenshot utility for Wayland |
+| [slurp](https://github.com/emersion/slurp) | [@emersion](https://github.com/emersion) | MIT | Region selector for Wayland |
+| [wl-clipboard](https://github.com/bugaevc/wl-clipboard) | [@bugaevc](https://github.com/bugaevc) | GPL-3.0 | Command-line Wayland clipboard |
+| [Wofi](https://hg.sr.ht/~scoopta/wofi) | [@scoopta](https://sr.ht/~scoopta/) | GPL-3.0 | Application launcher for wlroots |
+| [brightnessctl](https://github.com/Hummer12007/brightnessctl) | [@Hummer12007](https://github.com/Hummer12007) | MIT | Backlight brightness control |
+| [playerctl](https://github.com/altdesktop/playerctl) | [@altdesktop](https://github.com/altdesktop) | LGPL-3.0 | MPRIS media player controller |
+| [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) | Google / Tesseract | Apache-2.0 | Open-source OCR engine |
+| [nwg-displays](https://github.com/nwg-piotr/nwg-displays) | [@nwg-piotr](https://github.com/nwg-piotr) | MIT | Output management GUI |
+| [nwg-look](https://github.com/nwg-piotr/nwg-look) | [@nwg-piotr](https://github.com/nwg-piotr) | MIT | GTK settings editor for wlroots |
+| [Qalculate!](https://github.com/Qalculate/qalculate-gtk) | Qalculate Team | GPL-2.0 | Multi-purpose desktop calculator |
+
+### 🔤 Fonts
+
+| Font | Author / Organization | License | Description |
+| :--- | :--- | :--- | :--- |
+| [JetBrains Mono Nerd Font](https://github.com/ryanoasis/nerd-fonts) | [@ryanoasis](https://github.com/ryanoasis) / JetBrains | OFL-1.1 / MIT | Patched developer font with icons |
+| [Font Awesome](https://github.com/FortAwesome/Font-Awesome) | Font Awesome Team | OFL-1.1 / MIT | Iconic font and CSS toolkit |
+
+### 🎖️ Special Thanks
+
+- **[@JaKooLit](https://github.com/JaKooLit)** — Original `hyprlock.conf` and `hypridle.conf` configurations were adapted from the [JaKooLit Hyprland Dotfiles](https://github.com/JaKooLit/Hyprland-Dots) project.
+- **[@SherLock707](https://github.com/SherLock707)** — Original contributor of the hyprlock and hypridle config templates.
+- **[@mylinuxforwork (ML4W)](https://github.com/mylinuxforwork)** — The `ml4w-dotfiles-installer` and `ml4w-dotfiles-settings` scripts are from the [ML4W Dotfiles](https://github.com/mylinuxforwork/dotfiles) project.
+- **The Hyprland Community** — For the extensive [Hyprland Wiki](https://wiki.hypr.land/) documentation and ecosystem.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+
+All third-party tools, themes, fonts, and configurations retain their original licenses as listed in the credits above. This dotfiles repository contains configuration files and scripts; it does not redistribute the source code of any third-party project.
+
+---
+
 <div align="center">
+
+**Copyright © 2026 [Imagiyy](https://github.com/Imagiyy)**
 
 Crafted with ❤️ for Linux enthusiasts. Feel free to star ⭐️ the repository if you find it useful!
 
